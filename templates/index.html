@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Chord Expo</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <section class="hero">
+        <div class="hero-top">
+          <div>
+            <p class="eyebrow">Audio Tools</p>
+            <h1>Stem Separation and Chord Finding</h1>
+          </div>
+          <section class="panel auth-panel">
+            <p class="label">Account</p>
+            <p id="userEmail" class="user-email">--</p>
+            <div class="account-actions">
+              <a class="secondary-link" href="/auth">Switch account</a>
+              <button id="logoutButton" class="secondary-button" type="button">Logout</button>
+            </div>
+            <p id="authStatus" class="status">Loading account.</p>
+          </section>
+        </div>
+      </section>
+
+      <section class="workspace">
+        <aside class="panel library-panel">
+          <div class="panel-header">
+            <p class="label">Library</p>
+          </div>
+          <div id="libraryList" class="library-list empty">No saved tracks yet.</div>
+        </aside>
+
+        <section class="main-column">
+          <section class="tab-strip">
+            <button id="tabSeparation" class="tab-button active" type="button" data-tab="separation">Separate Stems</button>
+            <button id="tabAnalysis" class="tab-button" type="button" data-tab="analysis">Find Chords</button>
+          </section>
+
+          <section id="panelSeparation" class="tab-panel active">
+            <section class="panel upload-panel">
+              <form id="uploadForm" class="upload-form">
+                <label class="file-picker">
+                  <span>Full mix audio file</span>
+                  <input id="audioFile" name="file" type="file" accept="audio/*" required />
+                </label>
+
+                <div class="settings-grid">
+                  <label>
+                    <span>Model</span>
+                    <select name="model">
+                      <option value="htdemucs_6s" selected>htdemucs_6s</option>
+                      <option value="htdemucs_ft">htdemucs_ft</option>
+                      <option value="htdemucs">htdemucs</option>
+                    </select>
+                    <small class="field-help">Which Demucs model to run. `htdemucs_6s` is the main piano-capable model and usually the best default here.</small>
+                  </label>
+                  <label>
+                    <span>Shifts</span>
+                    <input name="shifts" type="number" min="1" max="8" value="4" />
+                    <small class="field-help">How many randomized inference passes to average. Higher values can improve separation quality, but they increase runtime a lot.</small>
+                  </label>
+                  <label>
+                    <span>Overlap</span>
+                    <input name="overlap" type="number" min="0.1" max="0.95" step="0.05" value="0.5" />
+                    <small class="field-help">How much neighboring audio chunks overlap during separation. More overlap can reduce boundary artifacts, but it costs more processing time and memory.</small>
+                  </label>
+                  <label>
+                    <span>Segment</span>
+                    <input name="segment" type="number" min="2" max="12" step="1" value="7" />
+                    <small class="field-help">Chunk length in seconds for model inference. Larger segments can preserve more context, but they are heavier and may fail on weaker hardware.</small>
+                  </label>
+                  <label>
+                    <span>CPU jobs</span>
+                    <input name="jobs" type="number" min="0" max="16" value="0" />
+                    <small class="field-help">How many worker processes Demucs can use when splitting work. `0` lets the backend stay conservative; higher values may help on strong CPUs.</small>
+                  </label>
+                  <label class="checkbox-field">
+                    <span>Aggressive refine</span>
+                    <input name="aggressive_refine" type="checkbox" checked />
+                    <small class="field-help">Applies stronger harmonic masking after separation. Usually cleaner for keys isolation, but it can remove some natural sustain or bleed texture.</small>
+                  </label>
+                </div>
+
+                <button id="submitButton" class="primary-button" type="submit">Start separation</button>
+              </form>
+            </section>
+
+            <section class="grid">
+              <section class="panel">
+                <div class="panel-header">
+                  <p class="label">Track status</p>
+                  <p id="stage" class="subtle">Idle</p>
+                </div>
+                <div class="progress-track">
+                  <div id="progressBar" class="progress-bar"></div>
+                </div>
+                <p id="status" class="status">Sign in, then upload a track.</p>
+                <pre id="logs" class="logs">Open or create a saved track.</pre>
+              </section>
+
+              <section class="panel">
+                <div class="panel-header">
+                  <p class="label">Stem Outputs</p>
+                  <p id="currentTrackLabel" class="subtle">No track selected</p>
+                </div>
+                <div id="results" class="results empty">No output yet.</div>
+              </section>
+            </section>
+          </section>
+
+          <section id="panelAnalysis" class="tab-panel">
+            <section class="panel upload-panel">
+              <form id="analysisForm" class="analysis-form">
+                <label class="file-picker">
+                  <span>Audio file to analyze</span>
+                  <input id="analysisFile" name="file" type="file" accept="audio/*" required />
+                </label>
+                <button id="analyzeButton" class="primary-button" type="submit">Analyze audio file</button>
+              </form>
+            </section>
+
+            <section class="panel summary-panel">
+              <div class="panel-header">
+                <p class="label">Analysis Summary</p>
+                <p id="analysisMeta" class="subtle">Available after analysis.</p>
+              </div>
+              <div class="summary-grid summary-grid-compact">
+                <article class="metric-card">
+                  <p class="label">Key</p>
+                  <p id="analysisKeyValue" class="metric-value">--</p>
+                </article>
+                <article class="metric-card">
+                  <p class="label">Tempo</p>
+                  <p id="analysisTempoValue" class="metric-value">--</p>
+                </article>
+              </div>
+            </section>
+
+            <section class="grid analysis-grid">
+              <section class="panel">
+                <div class="panel-header">
+                  <p class="label">Chord Sheet</p>
+                  <p id="measureMeta" class="subtle">Grouped by measure</p>
+                </div>
+                <div id="analysisPlayerPlaceholder" class="analysis-player-placeholder">No chord data yet.</div>
+                <div id="measureSheet" class="measure-sheet empty"></div>
+              </section>
+            </section>
+          </section>
+        </section>
+      </section>
+    </main>
+    <div id="analysisPlayerDock" class="analysis-player-dock empty">Load an analysis track to audition it bar by bar.</div>
+
+    <script src="/static/app.js"></script>
+  </body>
+</html>

@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Chord Expo Sign In</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <main class="auth-page">
+      <section class="auth-hero">
+        <p class="eyebrow">Audio Tools</p>
+        <h1>Sign In</h1>
+        <p class="intro">
+          Your account stores stems, chord sheets, logs, and analysis.
+        </p>
+      </section>
+
+      <section class="panel auth-shell">
+        <div class="auth-card">
+          <p class="label">Create Account</p>
+          <form id="registerForm" class="auth-form">
+            <input name="email" type="email" placeholder="Email" required />
+            <input name="password" type="password" placeholder="Password" minlength="8" required />
+            <button class="primary-button" type="submit">Create account</button>
+          </form>
+        </div>
+
+        <div class="auth-divider">or</div>
+
+        <div class="auth-card">
+          <p class="label">Sign In</p>
+          <form id="loginForm" class="auth-form">
+            <input name="email" type="email" placeholder="Email" required />
+            <input name="password" type="password" placeholder="Password" required />
+            <button class="secondary-button" type="submit">Sign in</button>
+          </form>
+        </div>
+      </section>
+
+      <p id="authStatus" class="auth-feedback"></p>
+    </main>
+
+    <script src="/static/auth.js"></script>
+  </body>
+</html>

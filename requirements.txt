@@ -1,0 +1,13 @@
+fastapi
+uvicorn
+python-multipart
+numpy
+scipy
+librosa
+soundfile
+madmom-prebuilt==0.17.post1
+lv-chordia==1.0.0
+mido
+demucs
+torch==2.11.0
+torchaudio==2.11.0
